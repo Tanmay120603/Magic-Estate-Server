@@ -15,7 +15,8 @@ require("dotenv").config()
 const server=express()
 const httpServer=http.createServer(server)
 const io=new Server(httpServer,{cors:{
-  origin:process.env.CLIENT_URL
+  origin:process.env.CLIENT_URL,
+  credentials:true
 }})
 
 server.use(cors({origin:process.env.CLIENT_URL,credentials:true}))
