@@ -41,5 +41,5 @@ exports.loginUser=async function(req,res){
 }
 
 exports.logoutUser=function (req,res){
-    res.clearCookie("token").json({message:"Logout Complete"})
+    res.clearCookie("token",{secure:true,httpOnly:true,sameSite:"none"}).json({message:"Logout Complete"})
 }
