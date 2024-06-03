@@ -27,6 +27,7 @@ server.use("/api/users",UserRouter)
 server.use("/api/posts",PostRouter)
 server.use("/api/chats",ChatRouter)
 server.use("/api/messages",MessageRouter)
+socketHandler(io)
 
 main().catch(err => console.log(err));
 
@@ -34,7 +35,5 @@ async function main() {
   await mongoose.connect(`mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.rt3uxtg.mongodb.net/Real-Estate-db?retryWrites=true&w=majority&appName=Cluster0`,{ignoreUndefined:true});
 }
 
-httpServer.listen(process.env.PORT,()=>{
-  socketHandler(io)
-})
+httpServer.listen(process.env.PORT)
 
