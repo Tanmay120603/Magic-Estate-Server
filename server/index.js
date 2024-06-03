@@ -3,6 +3,7 @@ const cors=require("cors")
 const express=require("express")
 const http=require("http")
 const {Server}=require("socket.io")
+const Message=require("./model/Message.js")["Message"]
 const cookieParser=require("cookie-parser")
 const AuthRouter=require("./routes/auth.js")["router"]
 const UserRouter=require("./routes/user.js")["router"]
