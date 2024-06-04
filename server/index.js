@@ -3,6 +3,7 @@ const express=require("express")
 const http=require("http")
 const {Server}=require("socket.io")
 const cookieParser=require("cookie-parser")
+const path = require("path")
 const AuthRouter=require("./routes/auth.js")["router"]
 const UserRouter=require("./routes/user.js")["router"]
 const PostRouter=require("./routes/post.js")["router"]
@@ -15,7 +16,7 @@ const server=express()
 const httpServer=http.createServer(server)
 const io=new Server(httpServer)
 
-server.use(express.static(process.env.STATIC_ROOT))
+server.use(express.static(path.resolve(__dirname,process.env.STATIC_ROOT)))
 server.use(express.json())
 server.use(cookieParser())
 server.use("/api/auth",AuthRouter)

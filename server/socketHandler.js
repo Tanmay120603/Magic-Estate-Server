@@ -8,16 +8,19 @@ io.on("connection",(socket)=>{
 
   socket.on("user-connected",(data)=>{
       onlineUsers.push(data)
+      console.log("User Connected--->",onlineUsers)
   })
 
   socket.on("chat-connected",async (data)=>{
       await Message.updateMany({chatId:data.chatId,seenBy:{$nin:data.userId}},{$push:{seenBy:data.userId}})
       const index=onlineUsers.findIndex(user=>user.userId===data?.userId)
       onlineUsers[index]={...onlineUsers[index],chatId:data.chatId}
+      console.log("Chat opened--->",onlineUsers)
   })
 
   socket.on("close-chat",(data)=>{
     onlineUsers=onlineUsers.map(user=>user.userId===data.userId ? {userId:user?.userId,socketId:user?.socketId} : user)
+    console.log("Chat Closed--->",onlineUsers)
   })
 
   socket.on("send-message",async (data)=>{
@@ -32,6 +35,7 @@ io.on("connection",(socket)=>{
 
   socket.on("user-disconnect",(userId)=>{
     onlineUsers=onlineUsers.filter(user=>user.userId!==userId)
+    console.log("User Disconnected--->",onlineUsers)
   })
 
   socket.on("disconnect",()=>{
