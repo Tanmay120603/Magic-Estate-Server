@@ -1,5 +1,4 @@
 const mongoose=require("mongoose")
-const cors=require("cors")
 const express=require("express")
 const http=require("http")
 const {Server}=require("socket.io")
@@ -14,11 +13,9 @@ require("dotenv").config()
 
 const server=express()
 const httpServer=http.createServer(server)
-const io=new Server(httpServer,{cors:{
-  origin:"*"
-}})
+const io=new Server(httpServer)
 
-server.use(cors({origin:process.env.CLIENT_URL,credentials:true}))
+server.use(express.static(process.env.STATIC_ROOT))
 server.use(express.json())
 server.use(cookieParser())
 server.use("/api/auth",AuthRouter)
