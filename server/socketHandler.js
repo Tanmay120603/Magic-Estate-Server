@@ -11,10 +11,9 @@ io.on("connection",(socket)=>{
       console.log("User Connected--->",onlineUsers)
   })
 
-  socket.on("chat-connected",async (data)=>{
-      await Message.updateMany({chatId:data.chatId,seenBy:{$nin:data.userId}},{$push:{seenBy:data.userId}})
+  socket.on("chat-connected",(data)=>{
       const index=onlineUsers.findIndex(user=>user.userId===data?.userId)
-      onlineUsers[index]={...onlineUsers[index],chatId:data.chatId}
+      onlineUsers[index]={...onlineUsers[index],chatId:data.chatId}   
       console.log("Chat opened--->",onlineUsers)
   })
 
@@ -23,13 +22,13 @@ io.on("connection",(socket)=>{
     console.log("Chat Closed--->",onlineUsers)
   })
 
-  socket.on("send-message",async (data)=>{
-    const receiver=onlineUsers.find(user=>user.userId===data.receiverId)
+  socket.on("send-message",(data)=>{
+    const receiver=onlineUsers.find(user=>user.userId===data?.messageObj?.receiverId)
     if(!receiver)return
     if(receiver.chatId===data.chatId){
-      await Message.findOneAndUpdate({_id:data.messageObj?.messageId},{$push:{seenBy:receiver?.userId}})
-      return socket.to(receiver.socketId).emit("receive-message",{message:data.messageObj})
+      return socket.to(receiver.socketId).emit("receive-message",{senderId:data?.senderId,...data.messageObj}) 
     }
+
     socket.to(receiver.socketId).emit("receive-notification",{chatId:data.chatId,message:data.messageObj})
   })
 

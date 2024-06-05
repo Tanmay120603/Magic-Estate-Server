@@ -3,5 +3,5 @@ const { verifyToken } = require("../middleware/verifyToken")
 const  messageController= require("../controller/message")
 const router=express.Router()
 
-router.post("/",verifyToken,messageController.createMessage).get("/unread/count",verifyToken,messageController.getUnreadMessages)
+router.post("/",verifyToken,messageController.sendMessage).get("/unread/count",verifyToken,messageController.getUnreadMessages).patch("/receive",messageController.receiveMessage)
 exports.router=router
