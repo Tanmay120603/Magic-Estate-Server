@@ -14,15 +14,6 @@ exports.sendMessage=async function(req,res){
     }
 }
 
-exports.receiveMessage=async function(req,res){
-    try{
-        const res=await Message.updateMany({chatId:req.body.chatId,seenBy:{$nin:req.body.receiverId}},{$push:{seenBy:req.body.receiverId}})
-        res.status(200).json({message:"Received and updated successfully"})
-    }
-    catch(err){
-        res.status(500).json({message:err.message})
-    }
-}
 
 exports.getUnreadMessages=async function(req,res){
     const userId=req.userId

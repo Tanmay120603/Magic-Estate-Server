@@ -16,7 +16,6 @@ const server=express()
 const httpServer=http.createServer(server)
 const io=new Server(httpServer)
 
-server.use(express.static(path.resolve(__dirname,process.env.STATIC_ROOT)))
 server.use(express.json())
 server.use(cookieParser())
 server.use("/api/auth",AuthRouter)
@@ -24,6 +23,11 @@ server.use("/api/users",UserRouter)
 server.use("/api/posts",PostRouter)
 server.use("/api/chats",ChatRouter)
 server.use("/api/messages",MessageRouter)
+server.use(express.static(process.env.STATIC_ROOT))
+
+server.get("*",(req,res)=>{
+  res.sendFile(path.resolve(__dirname,process.env.STATIC_ROOT,"index.html"))
+})
 
 main().catch(err => console.log(err));
 

@@ -22,6 +22,7 @@ exports.getChats=async function(req,res){
     const userId=req.userId
     try{
     const chats=await Chat.find({users:{$in:userId}}).populate({path:"users",match:{_id:{$ne:userId}}}).populate({path:"messages",match:{seenBy:{$nin:userId}}})
+    console.log(chats[1],userId)
     res.status(200).json(chats)
     }
     catch(err){

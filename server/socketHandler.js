@@ -1,31 +1,46 @@
-const Message=require("./model/Message.js")["Message"]
+const {socketAuth} = require("./middleware/socketAuth.js")
 
-let onlineUsers=[]
+const Message=require("./model/Message.js")["Message"]
+require("dotenv").config()
+
+let onlineUsers=new Map()
 
 function socketHandler(io){
 
+io.use((socket,next)=>{
+  socketAuth(socket,next)
+})
+
 io.on("connection",(socket)=>{
 
-  socket.on("user-connected",(data)=>{
-      onlineUsers.push(data)
-      console.log("User Connected--->",onlineUsers)
+  socket.on("user-connected",({userId,socketId})=>{
+      onlineUsers.set(userId,{socketId})
   })
 
-  socket.on("chat-connected",(data)=>{
-      const index=onlineUsers.findIndex(user=>user.userId===data?.userId)
-      onlineUsers[index]={...onlineUsers[index],chatId:data.chatId}   
-      console.log("Chat opened--->",onlineUsers)
+  socket.on("typing",({chatId,receiverId})=>{
+    const receiver=onlineUsers.get(receiverId)
+    if(receiver?.chatId===chatId)socket.to(receiver?.socketId).emit("user-typing")
   })
 
-  socket.on("close-chat",(data)=>{
-    onlineUsers=onlineUsers.map(user=>user.userId===data.userId ? {userId:user?.userId,socketId:user?.socketId} : user)
-    console.log("Chat Closed--->",onlineUsers)
+  socket.on("stop-typing",({chatId,receiverId})=>{
+    const receiver=onlineUsers.get(receiverId)
+    if(receiver?.chatId===chatId)socket.to(receiver?.socketId).emit("user-typing-stop")
   })
 
-  socket.on("send-message",(data)=>{
-    const receiver=onlineUsers.find(user=>user.userId===data?.messageObj?.receiverId)
+  socket.on("chat-connected",async({userId,chatId})=>{
+      await Message.updateMany({chatId,seenBy:{$nin:userId}},{$push:{seenBy:userId}})
+      onlineUsers.set(userId,{...onlineUsers.get(userId),chatId})
+  })
+
+  socket.on("close-chat",({userId})=>{
+    delete onlineUsers.get(userId)?.chatId
+  })
+
+  socket.on("send-message",async(data)=>{
+    const receiver=onlineUsers.get(data?.messageObj?.receiverId)
     if(!receiver)return
     if(receiver.chatId===data.chatId){
+      await Message.findByIdAndUpdate(data?.messageObj?.messageId,{$push:{seenBy:data?.messageObj?.receiverId}},{new:true})
       return socket.to(receiver.socketId).emit("receive-message",{senderId:data?.senderId,...data.messageObj}) 
     }
 
@@ -33,12 +48,7 @@ io.on("connection",(socket)=>{
   })
 
   socket.on("user-disconnect",(userId)=>{
-    onlineUsers=onlineUsers.filter(user=>user.userId!==userId)
-    console.log("User Disconnected--->",onlineUsers)
-  })
-
-  socket.on("disconnect",()=>{
-    console.log("disconnected")
+    onlineUsers.delete(userId)
   })
 
 })
